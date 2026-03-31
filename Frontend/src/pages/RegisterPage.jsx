@@ -20,16 +20,6 @@ export default function RegisterPage() {
   const { register, loginWithGoogle } = useAuth();
   const navigate = useNavigate();
 
-  const navigateByRole = (selectedRole) => {
-    const routes = {
-      user: '/dashboard/chat',
-      peer_mentor: '/mentor/peer',
-      professional: '/mentor/professional',
-      ngo: '/ngo',
-    };
-    navigate(routes[selectedRole] || '/dashboard/chat');
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!name || !email || !password) {
@@ -44,7 +34,7 @@ export default function RegisterPage() {
     setError('');
     try {
       await register(email, password, name, 'user');
-      navigate('/dashboard/chat');
+      navigate('/dashboard');
     } catch (err) {
       const code = err.code;
       if (code === 'auth/email-already-in-use') {
@@ -66,7 +56,7 @@ export default function RegisterPage() {
     setError('');
     try {
       await loginWithGoogle();
-      navigate('/dashboard/chat');
+      navigate('/dashboard');
     } catch (err) {
       if (err.code !== 'auth/popup-closed-by-user') {
         setError('Google sign-up failed. Please try again.');

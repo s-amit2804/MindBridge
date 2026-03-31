@@ -78,11 +78,11 @@ export default function LandingPage() {
       >
         <div className="container mx-auto px-6 flex items-center justify-between">
           <span className="text-2xl font-bold tracking-tighter font-serif select-none cursor-default">
-            NueraLyn<span className="text-gold">.</span>
+            NeuroLyn.<span className="text-gold">.</span>
           </span>
           <button
             onClick={() => navigate('/login')}
-            className="inline-flex items-center justify-center px-6 py-3 rounded-full text-sm font-medium
+            className="inline-flex items-center justify-center px-8 py-4 rounded-full text-lg font-medium
                        bg-white text-black hover:scale-105 hover:bg-gray-100 transition-all duration-300 cursor-pointer"
           >
             Enter
@@ -133,7 +133,7 @@ export default function LandingPage() {
                 className="text-5xl md:text-7xl font-medium leading-[1.1] tracking-tight mb-6 text-white mix-blend-overlay font-serif"
                 style={{ textShadow: '0 0 16px rgba(200,255,255,0.4), 0 0 30px rgba(255,200,200,0.4)' }}
               >
-                NueraLyn<span className="text-teal-300">.</span> <br />
+                NeuroLyn<span className="text-teal-300">.</span> <br />
                 <span className="italic font-light text-white/90 text-3xl md:text-5xl mt-4 block">The mental wellness agent.</span>
               </h1>
             </Reveal>

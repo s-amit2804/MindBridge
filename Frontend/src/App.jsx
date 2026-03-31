@@ -10,6 +10,7 @@ import VideoSplash from './components/VideoSplash';
 import LandingPage from './pages/LandingPage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
+import UserDashboard from './pages/dashboard/UserDashboard';
 import ChatPage from './pages/dashboard/ChatPage';
 import MentorSessionPage from './pages/dashboard/MentorSessionPage';
 import HistoryPage from './pages/dashboard/HistoryPage';
@@ -51,7 +52,7 @@ function AppRoutes() {
           <DashboardLayout />
         </ProtectedRoute>
       }>
-        <Route index element={<Navigate to="chat" replace />} />
+        <Route index element={<UserDashboard />} />
         <Route path="chat" element={<ChatPage />} />
         <Route path="mentor" element={<MentorSessionPage />} />
         <Route path="history" element={<HistoryPage />} />

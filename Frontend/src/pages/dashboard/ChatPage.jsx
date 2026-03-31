@@ -1,18 +1,15 @@
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Send, Sparkles, X, ShieldAlert, CheckCircle2, Clock, Calendar } from 'lucide-react';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import { sendMessage } from '../../services/chatService';
 import MessageBubble from '../../components/chat/MessageBubble';
-import SplineViewer from '../../components/spline/SplineViewer';
 import { useAppContext } from '../../context/AppContext';
 import GlassPanel from '../../components/ui/GlassPanel';
-import { Wrapper3D } from '../../components/ui/Wrapper3D';
 
 export default function ChatPage() {
   const { 
       loading, 
-      userMoodData, logMood, 
+      logMood, 
       mentorSlots, bookSlot,
       triggerAdminAlert
   } = useAppContext();
@@ -48,21 +45,24 @@ export default function ChatPage() {
     scrollToBottom();
   }, [messages]);
 
-  // Initial Load Check (If Context is ready and no mood logged today)
+  // Initial Load Check - Show mood overlay on EVERY login (each session)
   useEffect(() => {
-      if (loading) return; 
-      const today = new Date().toISOString().split('T')[0];
-      if (!userMoodData[today]) {
+      if (loading) return;
+      // Check if mood has already been given in this session
+      const moodGivenInSession = sessionStorage.getItem('neuralyn_mood_given');
+      if (!moodGivenInSession) {
           setShowMoodOverlay(true);
           setTimeout(() => setIsMountedFade(true), 50);
       }
-  }, [loading, userMoodData]);
+  }, [loading]);
 
   const handleMoodSelect = (value) => {
       setIsTransitioning(true);
       setTimeout(() => {
           const today = new Date().toISOString().split('T')[0];
           logMood(today, value);
+          // Mark mood as given in this session
+          sessionStorage.setItem('neuralyn_mood_given', 'true');
           setShowMoodOverlay(false);
           setIsTransitioning(false);
       }, 600);
@@ -142,48 +142,6 @@ export default function ChatPage() {
           setShowScheduler(false);
           setSelectedSlot(null);
       }, 2000);
-  };
-
-  // Chart Data
-  const generateLast30Days = () => {
-      const days = [];
-      for (let i = 29; i >= 0; i--) {
-          const date = new Date();
-          date.setDate(date.getDate() - i);
-          days.push(date.toISOString().split('T')[0]);
-      }
-      return days;
-  };
-
-  const moodStyle = (val) => {
-      const colors = {
-          1: { bg: '#F87171' },
-          2: { bg: '#FB923C' },
-          3: { bg: '#FDE047' },
-          4: { bg: '#86EFAC' },
-          5: { bg: '#16A34A' },
-          null: { bg: 'rgba(255,255,255,0.1)' } 
-      };
-      return colors[val] || colors[null];
-  };
-
-  const chartData = generateLast30Days().map(date => ({
-      fullDate: date,
-      displayDate: new Date(date).toLocaleDateString([], { month: 'short', day: 'numeric' }),
-      mood: userMoodData?.[date] || 0 
-  }));
-
-  const CustomTooltip = ({ active, payload }) => {
-      if (active && payload && payload.length) {
-          const data = payload[0].payload;
-          return (
-              <div className="glass-panel p-2 text-xs">
-                  <p className="font-bold text-white mb-1">{data.displayDate}</p>
-                  <p className="text-white/70">Mood: {data.mood || 'N/A'}</p>
-              </div>
-          );
-      }
-      return null;
   };
 
   if (loading) return <div className="p-8 text-white font-semibold">Loading...</div>;
@@ -320,44 +278,8 @@ export default function ChatPage() {
         </div>
       )}
 
-      {/* 3D Wrapped Main Interface */}
-      <div className="relative z-10 w-full h-full p-4 lg:p-8 flex items-center justify-center">
-        <Wrapper3D maxRotation={4} translateZ={20} className="w-full h-full max-w-6xl max-h-[850px] flex gap-6">
-          
-          {/* Left Column: Spline Viewer */}
-          <GlassPanel className="hidden lg:flex w-1/3 min-w-[320px] p-0 flex-col overflow-hidden shadow-2xl relative border-white/5 bg-black/40">
-            <div className="flex-1 w-full h-full relative">
-              <SplineViewer
-                url="https://my.spline.design/rememberallrobot-wCx0EM8GP79Xp0xl03DvSAkM/"
-                className="w-full h-full absolute inset-0 mix-blend-screen opacity-90"
-              />
-              <div className="absolute top-6 left-0 right-0 text-center pointer-events-none z-10 px-6">
-                 <h3 className="text-xs font-semibold text-white/50 uppercase tracking-widest flex items-center justify-center gap-2">
-                     <Sparkles size={14} className="text-gold" /> NueraLyn Companion
-                 </h3>
-              </div>
-
-              {/* Mini 30-Day Mood Chart Overlay */}
-              <div className="absolute bottom-6 left-6 right-6 p-4 rounded-2xl bg-black/30 backdrop-blur-md border border-white/5 pointer-events-none z-10">
-                <p className="text-[10px] text-white/40 uppercase tracking-widest mb-3 text-center">30-Day Emotional Range</p>
-                <div className="h-20 w-full">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={chartData} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
-                      <XAxis dataKey="displayDate" hide />
-                      <Bar dataKey="mood" radius={[2, 2, 0, 0]}>
-                        {chartData.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={moodStyle(entry.mood).bg} />
-                        ))}
-                      </Bar>
-                    </BarChart>
-                  </ResponsiveContainer>
-                </div>
-              </div>
-            </div>
-          </GlassPanel>
-
-          {/* Right Column: Chat Interface */}
-          <GlassPanel className="flex-1 flex flex-col p-0 overflow-hidden shadow-2xl relative border-white/5 bg-black/40">
+      <div className="relative z-10 w-full h-full p-4 lg:p-6">
+        <GlassPanel className="h-full w-full flex flex-col p-0 overflow-hidden shadow-2xl relative border-white/5 bg-black/40">
             {/* Header */}
             <div className="px-6 py-5 border-b border-white/5 flex items-center gap-4 bg-white/[0.02]">
               <div className="w-10 h-10 rounded-xl bg-gold/10 flex items-center justify-center">
@@ -444,8 +366,6 @@ export default function ChatPage() {
               </div>
             </div>
           </GlassPanel>
-
-        </Wrapper3D>
       </div>
     </div>
   );

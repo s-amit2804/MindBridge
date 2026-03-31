@@ -115,10 +115,12 @@ export function AuthProvider({ children }) {
     if (localStorage.getItem('neuralyn_mock_user') === 'true') {
       localStorage.removeItem('neuralyn_mock_user');
       setUser(null);
-      return;
+    } else {
+      await signOut(auth);
+      setUser(null);
     }
-    await signOut(auth);
-    setUser(null);
+    // Clear session mood flag so user is asked again on next login
+    sessionStorage.removeItem('neuralyn_mood_given');
   };
 
   /* ── Complete onboarding ── */

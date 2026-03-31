@@ -17,6 +17,16 @@ export default function LoginPage() {
   const { login, loginWithGoogle } = useAuth();
   const navigate = useNavigate();
 
+  const navigateByRole = (role) => {
+    const routes = {
+      user: '/dashboard',
+      peer_mentor: '/mentor/peer',
+      professional: '/mentor/professional',
+      ngo: '/ngo',
+    };
+    navigate(routes[role] || '/dashboard');
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!email || !password) {
@@ -26,8 +36,9 @@ export default function LoginPage() {
     setLoading(true);
     setError('');
     try {
-      await login(email, password);
-      navigate('/dashboard/chat');
+      const loggedInUser = await login(email, password);
+      const role = loggedInUser?.role || localStorage.getItem('neuralyn_role') || 'user';
+      navigateByRole(role);
     } catch (err) {
       const code = err.code;
       if (code === 'auth/user-not-found' || code === 'auth/wrong-password' || code === 'auth/invalid-credential') {
@@ -47,7 +58,8 @@ export default function LoginPage() {
     setError('');
     try {
       await loginWithGoogle();
-      navigate('/dashboard/chat');
+      const role = localStorage.getItem('neuralyn_role') || 'user';
+      navigateByRole(role);
     } catch (err) {
       if (err.code !== 'auth/popup-closed-by-user') {
         setError('Google sign-in failed. Please try again.');

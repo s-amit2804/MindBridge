@@ -21,6 +21,18 @@ export function AuthProvider({ children }) {
   /* Listen to Firebase auth state */
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, (firebaseUser) => {
+      // Check for mock user first
+      if (localStorage.getItem('neuralyn_mock_user') === 'true') {
+        setUser({
+          uid: localStorage.getItem('mock_uid') || 'mock-123',
+          name: localStorage.getItem('mock_name') || 'Mock User',
+          email: localStorage.getItem('mock_email') || 'test@example.com',
+          role: localStorage.getItem('neuralyn_role') || 'user',
+        });
+        setLoading(false);
+        return;
+      }
+
       if (firebaseUser) {
         setUser({
           uid: firebaseUser.uid,
@@ -52,6 +64,39 @@ export function AuthProvider({ children }) {
 
   /* ── Login with email/password ── */
   const login = async (email, password) => {
+    // MOCK CREDENTIALS INTERCEPT
+    if (email === 'peer@nuralyn.com' && password === 'password123') {
+      localStorage.setItem('neuralyn_mock_user', 'true');
+      localStorage.setItem('mock_uid', 'peer-123');
+      localStorage.setItem('mock_name', 'Alex (Peer Mentor)');
+      localStorage.setItem('mock_email', email);
+      localStorage.setItem('neuralyn_role', 'peer_mentor');
+      const mockUser = { uid: 'peer-123', name: 'Alex (Peer Mentor)', email, role: 'peer_mentor' };
+      setUser(mockUser);
+      return mockUser;
+    }
+    if (email === 'pro@nuralyn.com' && password === 'password123') {
+      localStorage.setItem('neuralyn_mock_user', 'true');
+      localStorage.setItem('mock_uid', 'pro-123');
+      localStorage.setItem('mock_name', 'Dr. Sarah (Professional)');
+      localStorage.setItem('mock_email', email);
+      localStorage.setItem('neuralyn_role', 'professional');
+      const mockUser = { uid: 'pro-123', name: 'Dr. Sarah (Professional)', email, role: 'professional' };
+      setUser(mockUser);
+      return mockUser;
+    }
+    if (email === 'ngo@nuralyn.com' && password === 'password123') {
+      localStorage.setItem('neuralyn_mock_user', 'true');
+      localStorage.setItem('mock_uid', 'ngo-123');
+      localStorage.setItem('mock_name', 'Hope Foundation (NGO)');
+      localStorage.setItem('mock_email', email);
+      localStorage.setItem('neuralyn_role', 'ngo');
+      const mockUser = { uid: 'ngo-123', name: 'Hope Foundation (NGO)', email, role: 'ngo' };
+      setUser(mockUser);
+      return mockUser;
+    }
+
+    localStorage.removeItem('neuralyn_mock_user');
     const cred = await signInWithEmailAndPassword(auth, email, password);
     return cred.user;
   };
@@ -67,6 +112,11 @@ export function AuthProvider({ children }) {
 
   /* ── Logout ── */
   const logout = async () => {
+    if (localStorage.getItem('neuralyn_mock_user') === 'true') {
+      localStorage.removeItem('neuralyn_mock_user');
+      setUser(null);
+      return;
+    }
     await signOut(auth);
     setUser(null);
   };

@@ -137,6 +137,15 @@ exports.login = async (req, res) => {
 // ─────────────────────────────────────────────
 exports.getMe = async (req, res) => {
   try {
+    // --- MOCK USER BYPASS ---
+    if (req.user._id === 'mock_user_id_12345') {
+      return res.json({
+        success: true,
+        data: req.user,
+      });
+    }
+    // ------------------------
+
     // req.user is set by the auth middleware after JWT verification
     const user = await User.findById(req.user._id).populate('organization', 'name type location');
 
